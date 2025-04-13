@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header" style="background: rgba(10, 14, 23, 0.85); border-bottom: 1px solid var(--border-glow);">
+        <h2 class="text-light text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Analyze Input</h2>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('analyze') }}" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Select Input Type:</label>
+                <select name="input_type" class="form-select analyze-input" onchange="toggleInput(this)">
+                    <option value="file">File (.eml, .msg, .txt)</option>
+                    <option value="url">URL</option>
+                    <option value="ip">IP Address</option>
+                    <option value="sha256">SHA256 Hash</option>
+                </select>
+            </div>
+            <div id="file-input" class="mb-3">
+                <label for="file" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Upload File:</label>
+                <input type="file" name="file" class="form-control analyze-input" accept=".eml,.msg,.txt">
+            </div>
+            <div id="url-input" class="mb-3" style="display: none;">
+                <label for="url" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter URL:</label>
+                <input type="text" name="url" class="form-control analyze-input" placeholder="https://example.com">
+            </div>
+            <div id="ip-input" class="mb-3" style="display: none;">
+                <label for="ip" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter IP Address:</label>
+                <input type="text" name="ip" class="form-control analyze-input" placeholder="192.168.1.1">
+            </div>
+            <div id="sha256-input" class="mb-3" style="display: none;">
+                <label for="sha256" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter SHA256 Hash:</label>
+                <input type="text" name="sha256" class="form-control analyze-input" placeholder="e.g., 64-character hash">
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function toggleInput(select) {
+    document.getElementById('file-input').style.display = select.value === 'file' ? 'block' : 'none';
+    document.getElementById('url-input').style.display = select.value === 'url' ? 'block' : 'none';
+    document.getElementById('ip-input').style.display = select.value === 'ip' ? 'block' : 'none';
+    document.getElementById('sha256-input').style.display = select.value === 'sha256' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

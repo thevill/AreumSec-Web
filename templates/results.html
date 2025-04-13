@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header" style="background: #0a2f23; border-bottom: 1px solid var(--border-glow);">
+        <h2 class="text-light text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Analysis Results</h2>
+    </div>
+    <div class="card-body">
+        {% if input_type == 'file' %}
+            <h4 class="text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px var(--primary-neon);">File Analysis</h4>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>File:</strong> {{ results.file }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>P1 Sender:</strong> {{ results.p1_sender }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>P2 Sender:</strong> {{ results.p2_sender }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Sender Domain:</strong> {{ results.sender_domain }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Sender IP:</strong> {{ results.sender_ip }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Subject:</strong> {{ results.subject }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Authentication Results:</strong></p>
+            <ul>
+                <li style="text-shadow: 0 0 5px var(--primary-neon);">SPF: {{ results.auth_data.SPF }}</li>
+                <li style="text-shadow: 0 0 5px var(--primary-neon);">DKIM: {{ results.auth_data.DKIM }}</li>
+                <li style="text-shadow: 0 0 5px var(--primary-neon);">DMARC: {{ results.auth_data.DMARC }}</li>
+            </ul>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>URLs:</strong></p>
+            {% if results.urls != "No URLs found" %}
+                <ul>
+                    {% for url_result in results.urls %}
+                        <li style="text-shadow: 0 0 5px var(--primary-neon);">
+                            {{ url_result.url }}<br>
+                            VirusTotal: {{ url_result.virustotal.verdict }}<br>
+                            {% if url_result.virustotal.engines %}
+                                Engines: {{ url_result.virustotal.engines | join(', ') }}<br>
+                            {% endif %}
+                            Safe Browsing: {{ url_result.safebrowsing }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="text-shadow: 0 0 5px var(--primary-neon);">{{ results.urls }}</p>
+            {% endif %}
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Organization Check:</strong> {{ results.organization }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>DNSBL Check:</strong> {{ results.dnsbl }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>VirusTotal File Check:</strong> {{ results.vt_file.verdict }}</p>
+            {% if results.vt_file.engines %}
+                <p style="text-shadow: 0 0 5px var(--primary-neon);">Engines: {{ results.vt_file.engines | join(', ') }}</p>
+            {% endif %}
+            {% if results.vt_file.history %}
+                <p style="text-shadow: 0 0 5px var(--primary-neon);">History: {{ results.vt_file.history | join(', ') }}</p>
+            {% endif %}
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Verdict:</strong> 
+                <span style="color: {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %}; text-shadow: 0 0 10px {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %};">{{ results.verdict }}</span>
+            </p>
+        
+        {% elif input_type == 'url' %}
+            <h4 class="text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px var(--primary-neon);">URL Analysis</h4>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>URL:</strong> {{ results.url }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>VirusTotal:</strong> {{ results.virustotal.verdict }}</p>
+            {% if results.virustotal.engines %}
+                <p style="text-shadow: 0 0 5px var(--primary-neon);">Engines: {{ results.virustotal.engines | join(', ') }}</p>
+            {% endif %}
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Safe Browsing:</strong> {{ results.safebrowsing }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Verdict:</strong> 
+                <span style="color: {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %}; text-shadow: 0 0 10px {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %};">{{ results.verdict }}</span>
+            </p>
+        
+        {% elif input_type == 'ip' %}
+            <h4 class="text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px var(--primary-neon);">IP Analysis</h4>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>IP:</strong> {{ results.ip }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>DNSBL Check:</strong> {{ results.dnsbl }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Verdict:</strong> 
+                <span style="color: {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %}; text-shadow: 0 0 10px {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %};">{{ results.verdict }}</span>
+            </p>
+        
+        {% elif input_type == 'sha256' %}
+            <h4 class="text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px var(--primary-neon);">SHA256 Analysis</h4>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>SHA256:</strong> {{ results.sha256 }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Verdict:</strong> 
+                <span style="color: {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %}; text-shadow: 0 0 10px {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %};">{{ results.verdict }}</span>
+            </p>
+        {% endif %}
+        
+        <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">Analyze Another</a>
+    </div>
+</div>
+{% endblock %}

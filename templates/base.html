@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AreumSec</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts for Cyberpunk Aesthetic -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-neon: #00ffea;
+            --secondary-neon: #ff007a;
+            --bg-dark: #0a0e17;
+            --card-bg: #1a1f2b;
+            --border-glow: #00ffea40;
+            --text-light: #d4d8e0;
+            --text-muted: #6e7681;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #141925 100%);
+            color: var(--text-light);
+            font-family: 'Roboto Mono', monospace;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Cyberpunk Background Effects */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 255, 234, 0.1), transparent 70%);
+            z-index: -1;
+            animation: pulse 10s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-glow);
+            padding: 1rem 0;
+            box-shadow: 0 4px 10px rgba(0, 255, 234, 0.2);
+        }
+
+        .navbar-brand {
+            color: var(--primary-neon) !important;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--primary-neon);
+            transition: all 0.3s ease;
+            margin: 0 auto; /* Center the brand */
+        }
+
+        .navbar-brand:hover {
+            text-shadow: 0 0 20px var(--primary-neon);
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin: 0 1rem;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-neon);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 0;
+            background: var(--primary-neon);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Center Navbar Content */
+        .navbar .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .navbar-collapse {
+            justify-content: center;
+        }
+
+        /* Container */
+        .container {
+            margin-top: 3rem;
+            padding: 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 234, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px rgba(0, 255, 234, 0.5);
+        }
+
+        .card-body {
+            color: var(--text-light);
+        }
+
+        /* Form Elements */
+        .form-control {
+            background: #141925;
+            border: 1px solid var(--border-glow);
+            color: var(--text-light);
+            border-radius: 5px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 10px var(--primary-neon);
+            border-color: var(--primary-neon);
+            background: #141925;
+            color: var(--text-light);
+        }
+
+        /* Analyze Input Specific Styling */
+        .analyze-input {
+            background: #141925;
+            border: 1px solid var(--primary-neon);
+            color: var(--primary-neon);
+            border-radius: 5px;
+            box-shadow: 0 0 5px var(--primary-neon);
+            transition: all 0.3s ease;
+        }
+
+        .analyze-input:focus {
+            box-shadow: 0 0 15px var(--primary-neon);
+            border-color: var(--secondary-neon);
+            color: var(--text-light);
+        }
+
+        .analyze-input::placeholder {
+            color: var(--primary-neon);
+            opacity: 0.7;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--primary-neon);
+            border: none;
+            color: var(--bg-dark);
+            font-weight: 500;
+            text-transform: uppercase;
+            border-radius: 5px;
+            box-shadow: 0 0 10px var(--primary-neon);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-neon);
+            box-shadow: 0 0 20px var(--secondary-neon);
+            color: var(--text-light);
+        }
+
+        /* Links */
+        a {
+            color: var(--primary-neon);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--secondary-neon);
+            text-shadow: 0 0 10px var(--secondary-neon);
+        }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-glow);
+            text-shadow: 0 0 5px var(--text-muted);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .navbar-brand {
+                font-size: 1.5rem;
+                margin: 0; /* Reset margin for mobile */
+            }
+            .container {
+                padding: 1rem;
+            }
+            .navbar .container {
+                justify-content: space-between; /* Adjust for mobile */
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">AreumSec</a>
+            
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        <!-- Example of Analyze Input (adjust as needed) -->
+        <form>
+            <div class="mb-3">
+                <input type="text" class="form-control analyze-input" placeholder="Enter text to analyze">
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze</button>
+        </form>
+        {% endblock %}
+    </div>
+
+    <footer class="text-center">
+        <small>© 2025 AreumSec — Real-Time Cyber Defense — Developed by Pranay Wajjala</small>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
