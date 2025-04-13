@@ -143,7 +143,6 @@ def analyze():
         sha256 = request.form.get('sha256')
         if not sha256:
             return render_template('error.html', message="No SHA256 provided")
-        # Note: VirusTotal SHA256 lookup requires a valid hash and API call (simplified here)
         results = {
             "sha256": sha256,
             "verdict": "Unable to verify SHA256 (API lookup not implemented for simplicity)"
