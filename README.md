@@ -38,7 +38,3 @@ python app.py
 
 ### **API Keys:**<br>
 Add your api_keys in config.py:<br>
-{<br>
-  "virustotal": "YOUR_VT_KEY_HERE",<br>
-  "safebrowsing": "YOUR_SAFE_BROWSING_KEY_HERE"<br>
-}<br>
