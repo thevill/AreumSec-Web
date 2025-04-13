@@ -1,9 +1,7 @@
 # config.py
 class Config:
-    VIRUSTOTAL_API_KEY = 'b80942e86f29693563fb31210082434b5d1e4219588f3061f4538a9774228370'
-    GOOGLE_SAFE_BROWSING_API_KEYS = [
-        'AIzaSyDPvunnq2zPypD6hDT7DpPBVsoagS0Gbts',
-        'AIzaSyBduBpY95v-aAOJgIegnPJ_ICUSlGmvTcA'
+    VIRUSTOTAL_API_KEY = 'add_your_key_here'
+    GOOGLE_SAFE_BROWSING_API_KEYS = ['add_your_key_here'
     ]
     SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
