@@ -1,4 +1,4 @@
-AreumSec — Real-Time Threat Intelligence & Analysis
+#AreumSec — Real-Time Threat Intelligence & Analysis
 
 AreumSec (아름 — Korean for graceful, beautiful) is a real-time web-based cybersecurity threat analysis application built with Python Flask and Bootstrap (Cyborg dark theme). Designed for security analysts and VAPT professionals, it offers a clean, intelligence-agency-inspired interface for rapid file, URL, and IP/hash investigations.
 
@@ -29,21 +29,6 @@ Tech Stack:
 3) Bootstrap 5 (Frontend)
 4) SQLite (Separate DB for DNSBL results)
 5) VirusTotal & Google SafeBrowsing APIs
-
-
-Folder Structure:
-AreumSec/
-│
-├── app.py                  # Main Flask app
-├── models.py               # DB handling for DNSBL
-├── config.py               # Store your VT & SafeBrowsing API keys here
-├── templates/
-│   ├── base.html
-│   ├── index.html
-│   ├── error.html
-│   └── result.html
-├── uploads/                # Temporarily stores uploaded files
-└── README.md
 
 
 API Keys:
