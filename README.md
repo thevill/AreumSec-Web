@@ -39,7 +39,3 @@ Add your api_keys in config.py:<br>
 ### **Running the App:**<br>
 pip install -r requirements.txt<br>
 python app.py<br>
-
-
-### **Screenshot:**
-![image](https://github.com/user-attachments/assets/9b832343-a945-490d-bce4-4ea2194e57bb)
