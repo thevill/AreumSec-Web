@@ -8,6 +8,14 @@
 ![AreumSec_GIF_2](https://github.com/user-attachments/assets/ae28f3d6-e14b-4f6b-9264-e36c9242a9d8)
 
 
+### **Running the App:**<br>
+```bash
+pip install -r requirements.txt
+```
+```bash
+python app.py
+```
+
 
 ### **Features:**
 1) Real-Time Analysis<br>
@@ -34,8 +42,3 @@ Add your api_keys in config.py:<br>
   "virustotal": "YOUR_VT_KEY_HERE",<br>
   "safebrowsing": "YOUR_SAFE_BROWSING_KEY_HERE"<br>
 }<br>
-
-
-### **Running the App:**<br>
-pip install -r requirements.txt<br>
-python app.py<br>
