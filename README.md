@@ -1,6 +1,6 @@
-#AreumSec — Real-Time Threat Intelligence & Analysis
+# AreumSec — Real-Time Threat Intelligence & Analysis
 
-AreumSec (아름 — Korean for graceful, beautiful) is a real-time web-based cybersecurity threat analysis application built with Python Flask and Bootstrap (Cyborg dark theme). Designed for security analysts and VAPT professionals, it offers a clean, intelligence-agency-inspired interface for rapid file, URL, and IP/hash investigations.
+**AreumSec** is a real-time web-based cybersecurity threat analysis application built with Python Flask and Bootstrap. Designed for security analysts and VAPT professionals, it offers a clean, intelligence-agency-inspired interface for rapid file, URL, and IP/hash investigations.
 
 
 Demo:
@@ -10,17 +10,14 @@ Demo:
 
 
 Features:
-1) Real-Time Analysis of:
-     URLs & Domains
-     IPv4 / IPv6 addresses
-     File Hashes (MD5, SHA1, SHA256)
-     EML / MSG / TXT files
-2) VirusTotal + Google SafeBrowsing Integration
-     API keys are securely managed in a separate config file.
-4) DNSBL Check & Logging
-     All DNS Blacklist results are stored in a separate SQLite database.
-5) Offline First
-     Lightweight and self-hosted — ideal for closed environments or air-gapped labs.
+1) Real-Time Analysis<br>
+   URLs & Domains, IPv4 / IPv6 addresses, File Hash (SHA256), EML / MSG / TXT files
+3) VirusTotal + Google SafeBrowsing Integration<br>
+   API keys are securely managed in a separate config file.
+5) DNSBL Check & Logging<br>
+   All DNS Blacklist results are stored in a separate SQLite database.
+6) Offline First<br>
+   Lightweight and self-hosted — ideal for closed environments or air-gapped labs.
 
 
 Tech Stack:
@@ -31,17 +28,17 @@ Tech Stack:
 5) VirusTotal & Google SafeBrowsing APIs
 
 
-API Keys:
-Add your api_keys in config.py:
-{
-  "virustotal": "YOUR_VT_KEY_HERE",
-  "safebrowsing": "YOUR_SAFE_BROWSING_KEY_HERE"
-}
+API Keys:<br>
+Add your api_keys in config.py:<br>
+{<br>
+  "virustotal": "YOUR_VT_KEY_HERE",<br>
+  "safebrowsing": "YOUR_SAFE_BROWSING_KEY_HERE"<br>
+}<br>
 
 
-Running the App:
-pip install -r requirements.txt
-python app.py
+Running the App:<br>
+pip install -r requirements.txt<br>
+python app.py<br>
 
 
 Screenshot
