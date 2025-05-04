@@ -2,10 +2,8 @@
 
 {% block content %}
 <div class="card shadow">
-    <div class="card-header" style="background: #0a2f23; border-bottom: 1px solid var(--border-glow);">
-        <h2 class="text-light text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Error</h2>
-    </div>
     <div class="card-body">
+        <h2 class="text-uppercase mb-4" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Error</h2>
         <p style="text-shadow: 0 0 5px var(--primary-neon);">{{ message }}</p>
         <a href="{{ url_for('index') }}" class="btn btn-primary">Try Again</a>
     </div>

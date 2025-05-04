@@ -63,7 +63,7 @@
             letter-spacing: 2px;
             text-shadow: 0 0 10px var(--primary-neon);
             transition: all 0.3s ease;
-            margin: 0 auto; 
+            margin: 0 auto; /* Center the brand */
         }
 
         .navbar-brand:hover {
@@ -208,17 +208,17 @@
             text-shadow: 0 0 5px var(--text-muted);
         }
 
-       
+        /* Responsive Adjustments */
         @media (max-width: 768px) {
             .navbar-brand {
                 font-size: 1.5rem;
-                margin: 0; 
+                margin: 0; /* Reset margin for mobile */
             }
             .container {
                 padding: 1rem;
             }
             .navbar .container {
-                justify-content: space-between; 
+                justify-content: space-between; /* Adjust for mobile */
             }
         }
     </style>
@@ -227,25 +227,36 @@
 <body>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('index') }}">AreumSec</a>
-            
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/ico_areumsec.png') }}" alt="AreumSec Logo" width="100" height="100" class="d-inline-block me-2">
+                <span class="fs-2 fw-bold">AreumSec</span>
+              </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    {% if request.path == '/' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('history') }}">History</a>
+                        </li>
+                    {% elif request.path == '/history' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Analyze</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </nav>
 
     <div class="container">
         {% block content %}
-       
-        <form>
-            <div class="mb-3">
-                <input type="text" class="form-control analyze-input" placeholder="Enter text to analyze">
-            </div>
-            <button type="submit" class="btn btn-primary">Analyze</button>
-        </form>
         {% endblock %}
     </div>
 
     <footer class="text-center">
-        <small>AreumSec — Real-Time Threat Intelligence & Analysis — Developed by Pranay Wajjala</small>
+        <small><a href="https://github.com/thevill/AreumSec">AreumSec</a> — Real-Time Threat Intelligence & Analysis — Developed by <a href="https://linkedin.com/in/pranaywajjala">Pranay Wajjala</a></small>
     </footer>
 
     <!-- Bootstrap JS -->

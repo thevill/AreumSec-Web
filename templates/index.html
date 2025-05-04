@@ -2,15 +2,13 @@
 
 {% block content %}
 <div class="card shadow">
-    <div class="card-header" style="background: rgba(10, 14, 23, 0.85); border-bottom: 1px solid var(--border-glow);">
-        <h2 class="text-light text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Analyze Input</h2>
-    </div>
     <div class="card-body">
+        <h2 class="text-uppercase mb-4" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Analyze Input</h2>
         <form method="POST" action="{{ url_for('analyze') }}" enctype="multipart/form-data">
             <div class="mb-3">
                 <label class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Select Input Type:</label>
                 <select name="input_type" class="form-select analyze-input" onchange="toggleInput(this)">
-                    <option value="file">File (.eml, .msg, .txt)</option>
+                    <option value="file">File (Any type, max 32 MB)</option>
                     <option value="url">URL</option>
                     <option value="ip">IP Address</option>
                     <option value="sha256">SHA256 Hash</option>
@@ -18,15 +16,43 @@
             </div>
             <div id="file-input" class="mb-3">
                 <label for="file" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Upload File:</label>
-                <input type="file" name="file" class="form-control analyze-input" accept=".eml,.msg,.txt">
+                <input type="file" name="file" class="form-control analyze-input" accept="*/*">
+                <small class="form-text" style="color: var(--text-muted); text-shadow: 0 0 5px var(--text-muted);">
+                    .eml, .msg, .txt with email headers will include email analysis. Max size: 32 MB.
+                </small>
             </div>
             <div id="url-input" class="mb-3" style="display: none;">
                 <label for="url" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter URL:</label>
                 <input type="text" name="url" class="form-control analyze-input" placeholder="https://example.com">
+                <label class="form-label mt-2" style="text-shadow: 0 0 5px var(--primary-neon);">Select Service:</label>
+                <select name="service" class="form-select analyze-input">
+                    {% if online %}
+                        <option value="URLhaus" selected>URLhaus</option>
+                        {% if has_vt_keys %}
+                            <option value="VirusTotal">VirusTotal</option>
+                        {% else %}
+                            <option value="VirusTotal" disabled title="Add VirusTotal API key to enable">VirusTotal (Disabled)</option>
+                        {% endif %}
+                        {% if has_gsb_keys %}
+                            <option value="Google Safe Browsing">Google Safe Browsing</option>
+                        {% else %}
+                            <option value="Google Safe Browsing" disabled title="Add Google Safe Browsing API key to enable">Google Safe Browsing (Disabled)</option>
+                        {% endif %}
+                        {% if has_vt_keys and has_gsb_keys %}
+                            <option value="All 3">All</option>
+                        {% else %}
+                            <option value="All 3" disabled title="Add both API keys to enable">All (Disabled)</option>
+                        {% endif %}
+                    {% else %}
+                        {% if cached %}
+                            <option value="URLhaus">URLhaus</option>
+                        {% endif %}
+                    {% endif %}
+                </select>
             </div>
             <div id="ip-input" class="mb-3" style="display: none;">
                 <label for="ip" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter IP Address:</label>
-                <input type="text" name="ip" class="form-control analyze-input" placeholder="192.168.1.1">
+                <input type="text" name="ip" class="form-control analyze-input" placeholder="192.168.1.1 or 2001:db8::1">
             </div>
             <div id="sha256-input" class="mb-3" style="display: none;">
                 <label for="sha256" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter SHA256 Hash:</label>
