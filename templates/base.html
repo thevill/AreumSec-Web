@@ -47,25 +47,35 @@
         }
 
         /* Navbar Styling */
-        .navbar {
+        .navbar.navbar-expand-lg {
             background: rgba(10, 14, 23, 0.85);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-glow);
-            /*padding: 0.25rem 0;  Further reduced padding for standard height */
-            padding: 0.05rem 1rem; /* Standard Bootstrap navbar padding */
-            box-shadow: 0 4px 10px rgba(0, 255, 234, 0.2);
+            padding: 0.3rem 0.5rem !important;
+            max-height: 80px !important;
+            box-shadow: 0 2px 5px rgba(0, 255, 234, 0.1);
+            line-height: 1.1;
         }
 
         .navbar-brand {
             color: var(--primary-neon) !important;
             font-family: 'Orbitron', sans-serif;
-            /*font-size: 1.2rem;  Further reduced font size */
-            font-size: 1rem; /* Bootstrap default font size */
+            font-size: 1.0rem; /* Smaller font size */
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
             text-shadow: 0 0 10px var(--primary-neon);
             transition: all 0.3s ease;
-            margin: 0 auto; /* Center the brand */
+            margin: 0;
+            padding: 0;
+            line-height: 1.1;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand img {
+            width: 30px;
+            height: 30px;
+            margin-right: 0.3rem;
         }
 
         .navbar-brand:hover {
@@ -74,11 +84,12 @@
 
         .nav-link {
             color: var(--text-light);
-            /*font-size: 0.85rem;  Further reduced font size */
-            font-size: 0.9rem; /* Bootstrap default size */
-            margin: 0 0.4rem; /* Tighter margin for compact layout */
+            font-size: 0.8rem;
+            margin: 0 0.2rem;
+            padding: 0.2rem 0.4rem;
             position: relative;
             transition: color 0.3s ease;
+            line-height: 1.1;
         }
 
         .nav-link:hover {
@@ -90,7 +101,7 @@
             position: absolute;
             width: 0;
             height: 2px;
-            bottom: -4px;
+            bottom: -3px;
             left: 0;
             background: var(--primary-neon);
             transition: width 0.3s ease;
@@ -102,24 +113,32 @@
 
         /* Navbar Toggler Styling */
         .navbar-toggler {
-            padding: 0.25rem 0.5rem; /* Reduced padding for smaller toggler */
+            padding: 0.15rem 0.3rem;
             border: 1px solid var(--primary-neon);
         }
 
         .navbar-toggler-icon {
-            width: 1.2em; /* Slightly smaller icon */
-            height: 1.2em;
+            width: 0.8em;
+            height: 0.8em;
         }
 
         /* Center Navbar Content */
         .navbar .container {
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            height: 100%;
         }
 
         .navbar-collapse {
-            justify-content: center;
+            justify-content: flex-end;
+        }
+
+        .navbar-nav {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
         }
 
         /* Container */
@@ -215,7 +234,7 @@
 
         /* Footer */
         footer {
-            margin-top: 4rem;
+            margin-top: 3rem;
             padding: 1.0rem 0;
             color: var(--text-muted);
             border-top: 1px solid var(--border-glow);
@@ -225,14 +244,35 @@
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .navbar-brand {
-                font-size: 1rem; /* Further reduced for mobile */
-                margin: 0; /* Reset margin for mobile */
+                font-size: 0.75rem;
+                margin: 0;
+                padding: 0;
+            }
+            .navbar-brand img {
+                width: 20px;
+                height: 20px;
+            }
+            .nav-link {
+                font-size: 0.75rem;
+                margin: 0;
+                padding: 0.4rem;
             }
             .container {
                 padding: 1rem;
             }
             .navbar .container {
-                justify-content: space-between; /* Adjust for mobile */
+                justify-content: space-between;
+            }
+            .navbar.navbar-expand-lg {
+                max-height: 48px !important;
+                padding: 0.2rem 0.5rem !important;
+            }
+            .navbar-toggler {
+                padding: 0.1rem 0.2rem;
+            }
+            .navbar-toggler-icon {
+                width: 0.7em;
+                height: 0.7em;
             }
         }
     </style>
@@ -242,8 +282,8 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='images/ico_areumsec.png') }}" alt="AreumSec Logo" width="32" height="32" class="d-inline-block me-2"> <!-- Further reduced logo size -->
-                <span class="fs-5 fw-bold">AreumSec</span> <!-- Adjusted font size -->
+                <img src="{{ url_for('static', filename='images/ico_areumsec.png') }}" alt="AreumSec Logo" width="24" height="24" class="d-inline-block me-1"> <!-- Smaller logo -->
+                <span class="fw-bold">AreumSec</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
