@@ -29,7 +29,9 @@
                                 {% if url_result.virustotal.engines %}
                                     Engines: {{ url_result.virustotal.engines | join(', ') }}<br>
                                 {% endif %}
-                                Safe Browsing: {{ url_result.safebrowsing }}
+                                Safe Browsing: {{ url_result.safebrowsing }}<br>
+                                URLhaus: {{ url_result.urlhaus.verdict }}<br>
+                                Phishing-DB: {{ url_result.phishing_db.verdict }}
                             </li>
                         {% endfor %}
                     </ul>
@@ -37,7 +39,16 @@
                     <p style="text-shadow: 0 0 5px var(--primary-neon);">{{ results.urls }}</p>
                 {% endif %}
                 <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Organization Check:</strong> {{ results.organization }}</p>
-                <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>DNSBL Check:</strong> {{ results.dnsbl }}</p>
+                <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>DNSBL Check:</strong> {{ results.dnsbl.dnsbl }}</p>
+                {% if results.dnsbl.whois %}
+                    <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>WHOIS Data:</strong></p>
+                    <ul>
+                        <li style="text-shadow: 0 0 5px var(--primary-neon);">Organization: {{ results.dnsbl.whois.organization }}</li>
+                        <li style="text-shadow: 0 0 5px var(--primary-neon);">Country: {{ results.dnsbl.whois.country }}</li>
+                        <li style="text-shadow: 0 0 5px var(--primary-neon);">ASN: {{ results.dnsbl.whois.asn }}</li>
+                        <li style="text-shadow: 0 0 5px var(--primary-neon);">Registrar: {{ results.dnsbl.whois.registrar }}</li>
+                    </ul>
+                {% endif %}
             {% endif %}
             <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>VirusTotal File Check:</strong> {{ results.vt_file.verdict }}</p>
             {% if results.vt_file.engines %}
@@ -59,6 +70,7 @@
             {% endif %}
             <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Safe Browsing:</strong> {{ results.safebrowsing }}</p>
             <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>URLhaus:</strong> {{ results.urlhaus.verdict }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Phishing-DB:</strong> {{ results.phishing_db.verdict }}</p>
             <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Verdict:</strong> 
                 <span style="color: {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %}; text-shadow: 0 0 10px {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %};">{{ results.verdict }}</span>
             </p>
@@ -66,7 +78,16 @@
         {% elif input_type == 'ip' %}
             <h4 class="text-uppercase" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px var(--primary-neon);">IP Analysis</h4>
             <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>IP:</strong> {{ results.ip }}</p>
-            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>DNSBL Check:</strong> {{ results.dnsbl }}</p>
+            <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>DNSBL Check:</strong> {{ results.dnsbl.dnsbl }}</p>
+            {% if results.dnsbl.whois %}
+                <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>WHOIS Data:</strong></p>
+                <ul>
+                    <li style="text-shadow: 0 0 5px var(--primary-neon);">Organization: {{ results.dnsbl.whois.organization }}</li>
+                    <li style="text-shadow: 0 0 5px var(--primary-neon);">Country: {{ results.dnsbl.whois.country }}</li>
+                    <li style="text-shadow: 0 0 5px var(--primary-neon);">ASN: {{ results.dnsbl.whois.asn }}</li>
+                    <li style="text-shadow: 0 0 5px var(--primary-neon);">Registrar: {{ results.dnsbl.whois.registrar }}</li>
+                </ul>
+            {% endif %}
             <p style="text-shadow: 0 0 5px var(--primary-neon);"><strong>Verdict:</strong> 
                 <span style="color: {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %}; text-shadow: 0 0 10px {% if results.verdict == 'Suspicious' %}var(--secondary-neon){% else %}var(--primary-neon){% endif %};">{{ results.verdict }}</span>
             </p>

@@ -4,7 +4,7 @@
 <div class="card shadow">
     <div class="card-body">
         <h2 class="text-uppercase mb-4" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Analyze Input</h2>
-        <form method="POST" action="{{ url_for('analyze') }}" enctype="multipart/form-data">
+        <form method="POST" action="{{ url_for('analyze') }}" enctype="multipart/form-data" id="analyze-form">
             <div class="mb-3">
                 <label class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Select Input Type:</label>
                 <select name="input_type" class="form-select analyze-input" onchange="toggleInput(this)">
@@ -23,11 +23,15 @@
             </div>
             <div id="url-input" class="mb-3" style="display: none;">
                 <label for="url" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter URL:</label>
-                <input type="text" name="url" class="form-control analyze-input" placeholder="https://example.com">
+                <input type="text" name="url" id="url" class="form-control analyze-input" placeholder="https://example.com">
+                <small id="url-error" class="form-text" style="color: var(--secondary-neon); display: none; text-shadow: 0 0 5px var(--secondary-neon);">
+                    Invalid URL. Must be a valid http:// or https:// URL (e.g., https://example.com).
+                </small>
                 <label class="form-label mt-2" style="text-shadow: 0 0 5px var(--primary-neon);">Select Service:</label>
                 <select name="service" class="form-select analyze-input">
                     {% if online %}
                         <option value="URLhaus" selected>URLhaus</option>
+                        <option value="Phishing-DB">Phishing-DB</option>
                         {% if has_vt_keys %}
                             <option value="VirusTotal">VirusTotal</option>
                         {% else %}
@@ -39,29 +43,78 @@
                             <option value="Google Safe Browsing" disabled title="Add Google Safe Browsing API key to enable">Google Safe Browsing (Disabled)</option>
                         {% endif %}
                         {% if has_vt_keys and has_gsb_keys %}
-                            <option value="All 3">All</option>
+                            <option value="All">All Services</option>
                         {% else %}
-                            <option value="All 3" disabled title="Add both API keys to enable">All (Disabled)</option>
+                            <option value="All" disabled title="Add both VirusTotal and Google Safe Browsing API keys to enable">All Services (Disabled)</option>
                         {% endif %}
                     {% else %}
                         {% if cached %}
-                            <option value="URLhaus">URLhaus</option>
+                            <option value="URLhaus" selected>URLhaus</option>
+                            <option value="Phishing-DB">Phishing-DB</option>
+                        {% else %}
+                            <option value="" disabled selected>No cached data available</option>
                         {% endif %}
                     {% endif %}
                 </select>
             </div>
             <div id="ip-input" class="mb-3" style="display: none;">
                 <label for="ip" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter IP Address:</label>
-                <input type="text" name="ip" class="form-control analyze-input" placeholder="192.168.1.1 or 2001:db8::1">
+                <input type="text" name="ip" id="ip" class="form-control analyze-input" placeholder="192.168.1.1 or 2001:db8::1">
+                <small id="ip-error" class="form-text" style="color: var(--secondary-neon); display: none; text-shadow: 0 0 5px var(--secondary-neon);">
+                    Invalid IP. Must be a valid IPv4 (e.g., 192.168.1.1) or IPv6 (e.g., 2001:db8::1) address.
+                </small>
             </div>
             <div id="sha256-input" class="mb-3" style="display: none;">
                 <label for="sha256" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter SHA256 Hash:</label>
                 <input type="text" name="sha256" class="form-control analyze-input" placeholder="e.g., 64-character hash">
+                <small id="sha256-error" class="form-text" style="color: var(--secondary-neon); display: none; text-shadow: 0 0 5px var(--secondary-neon);">
+                    Invalid SHA256. Must be a 64-character hexadecimal string.
+                </small>
             </div>
-            <button type="submit" class="btn btn-primary">Analyze</button>
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                <span class="btn-text">Analyze</span>
+                <span class="btn-loading">
+                    <span class="spinner"></span> Analyzing...
+                </span>
+            </button>            
         </form>
     </div>
 </div>
+<style>
+.spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 3px solid var(--primary-neon);
+    border-top-color: var(--secondary-neon);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.5rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.btn-loading {
+    display: none; /* Hide by default */
+}
+
+.btn-primary.loading .btn-text {
+    display: none;
+}
+
+.btn-primary.loading .btn-loading {
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-primary.loading {
+    opacity: 0.85;
+    cursor: not-allowed;
+}
+</style>
 
 <script>
 function toggleInput(select) {
@@ -69,6 +122,82 @@ function toggleInput(select) {
     document.getElementById('url-input').style.display = select.value === 'url' ? 'block' : 'none';
     document.getElementById('ip-input').style.display = select.value === 'ip' ? 'block' : 'none';
     document.getElementById('sha256-input').style.display = select.value === 'sha256' ? 'block' : 'none';
+    validateForm();
 }
+
+function validateForm() {
+    const inputType = document.querySelector('select[name="input_type"]').value;
+    const submitBtn = document.getElementById('submit-btn');
+    let isValid = false;
+
+    if (inputType === 'url') {
+        const urlInput = document.getElementById('url').value.trim();
+        const urlError = document.getElementById('url-error');
+        const urlRegex = /^https?:\/\/(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|localhost|\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::\d+)?(?:\/?|[\/?]\S+)$/i;
+        if (urlInput && urlRegex.test(urlInput)) {
+            urlError.style.display = 'none';
+            isValid = true;
+        } else {
+            urlError.style.display = urlInput ? 'block' : 'none';
+            isValid = false;
+        }
+    } else {
+        document.getElementById('url-error').style.display = 'none';
+    }
+
+    if (inputType === 'ip') {
+        const ipInput = document.getElementById('ip').value.trim();
+        const ipError = document.getElementById('ip-error');
+        const ipv4Regex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:))$/;
+        if (ipInput && (ipv4Regex.test(ipInput) || ipv6Regex.test(ipInput))) {
+            ipError.style.display = 'none';
+            isValid = true;
+        } else {
+            ipError.style.display = ipInput ? 'block' : 'none';
+            isValid = false;
+        }
+    } else {
+        document.getElementById('ip-error').style.display = 'none';
+    }
+
+    if (inputType === 'file') {
+        const fileInput = document.querySelector('input[name="file"]');
+        isValid = fileInput.files && fileInput.files.length > 0;
+    }
+
+    if (inputType === 'sha256') {
+        const sha256Input = document.querySelector('input[name="sha256"]').value.trim();
+        const sha256Error = document.getElementById('sha256-error');
+        const sha256Regex = /^[0-9a-fA-F]{64}$/;
+        if (sha256Input && sha256Regex.test(sha256Input)) {
+            sha256Error.style.display = 'none';
+            isValid = true;
+        } else {
+            sha256Error.style.display = sha256Input ? 'block' : 'none';
+            isValid = false;
+        }
+    } else {
+        document.getElementById('sha256-error').style.display = 'none';
+    }
+
+    submitBtn.disabled = !isValid;
+}
+
+// Handle form submission with loading state
+document.getElementById('analyze-form').addEventListener('submit', function(event) {
+    const submitBtn = document.getElementById('submit-btn');
+    if (!submitBtn.disabled) {
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+    }
+});
+
+// Add input event listeners
+document.getElementById('url').addEventListener('input', validateForm);
+document.getElementById('ip').addEventListener('input', validateForm);
+document.querySelector('input[name="file"]').addEventListener('change', validateForm);
+document.querySelector('input[name="sha256"]').addEventListener('input', validateForm);
+document.querySelector('select[name="input_type"]').addEventListener('change', validateForm);
 </script>
 {% endblock %}

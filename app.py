@@ -75,15 +75,26 @@ def load_config():
 
 # Initialize cache
 def load_cache():
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'rb') as f:
-            return pickle.load(f)
-    return {
+    default_cache = {
         'urls': set(),
         'access_log': [],
         'virustotal_usage': {},
-        'google_sb_usage': {}
+        'google_sb_usage': {},
+        'phishing_db_urls': set(),
+        'phishing_db_access_log': []
     }
+    if os.path.exists(CACHE_FILE):
+        try:
+            with open(CACHE_FILE, 'rb') as f:
+                cache = pickle.load(f)
+                # Ensure all required keys exist in the loaded cache
+                for key, value in default_cache.items():
+                    if key not in cache:
+                        cache[key] = value
+                return cache
+        except Exception as e:
+            logging.error(f"Failed to load cache: {e}")
+    return default_cache
 
 def save_cache(cache):
     try:
@@ -94,14 +105,45 @@ def save_cache(cache):
 
 # Validate URL format
 def is_valid_url(url):
-    parsed_url = urlparse(url)
-    return parsed_url.scheme in ['http', 'https']
+    regex = re.compile(
+        r'^https?://'  # Scheme (http or https)
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # Domain
+        r'localhost|'  # Localhost
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # IPv4
+        r'(?::\d+)?'  # Optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return bool(regex.match(url.strip()))
 
 # Validate IP format
 def is_valid_ip(ip):
+    ip = ip.strip()
+    # IPv4 regex
+    ipv4_regex = re.compile(
+        r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+        r'(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+    )
+    # IPv6 regex
+    ipv6_regex = re.compile(
+        r'^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|'
+        r'([0-9a-fA-F]{1,4}:){1,7}:|'
+        r'([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|'
+        r'([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|'
+        r'([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|'
+        r'([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|'
+        r'([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|'
+        r'[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|'
+        r':((:[0-9a-fA-F]{1,4}){1,7}|:)|'
+        r'fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|'
+        r'::(ffff(:0{1,4}){0,1}:){0,1}'
+        r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+        r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)|'
+        r'([0-9a-fA-F]{1,4}:){1,4}:'
+        r'((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}'
+        r'(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))$'
+    )
     try:
         ipaddress.ip_address(ip)
-        return True
+        return bool(ipv4_regex.match(ip) or ipv6_regex.match(ip))
     except ValueError:
         return False
 
@@ -119,15 +161,16 @@ def is_online():
         logging.error(f"Internet connectivity check failed: {e}")
         return False
 
-# Check rate limit for URLhaus
-def can_pull(cache):
+# Check rate limit for URLhaus or Phishing-DB
+def can_pull(cache, service='urlhaus'):
     now = datetime.now()
-    access_log = cache['access_log']
+    access_log_key = 'access_log' if service == 'urlhaus' else 'phishing_db_access_log'
+    access_log = cache[access_log_key]
     access_log = [t for t in access_log if (now - t).total_seconds() < TIME_WINDOW]
-    cache['access_log'] = access_log
+    cache[access_log_key] = access_log
     if len(access_log) >= MAX_PULLS:
         return False
-    cache['access_log'].append(now)
+    cache[access_log_key].append(now)
     save_cache(cache)
     return True
 
@@ -158,7 +201,7 @@ def can_use_api_key(cache, api_key, service, now):
 def check_urlhaus_text(url, cache):
     if url in cache['urls']:
         return True
-    if not can_pull(cache):
+    if not can_pull(cache, 'urlhaus'):
         return "Rate limit exceeded. Try again later."
     
     try:
@@ -182,7 +225,7 @@ def check_urlhaus_text(url, cache):
 def check_urlhaus_ndb(url, cache):
     if url in cache['urls']:
         return True
-    if not can_pull(cache):
+    if not can_pull(cache, 'urlhaus'):
         return "Rate limit exceeded. Try again later."
     
     try:
@@ -209,6 +252,37 @@ def check_urlhaus_ndb(url, cache):
     except requests.RequestException as e:
         logging.error(f"URLhaus NDB error: {e}")
         return f"Error accessing URLhaus NDB: {e}"
+
+# Check URL against Phishing Database
+def check_phishing_db(url, cache):
+    if url in cache['phishing_db_urls']:
+        return True
+    if not can_pull(cache, 'phishing_db'):
+        return "Rate limit exceeded. Try again later."
+    
+    phishing_db_urls = [
+        "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/refs/heads/master/phishing-links-ACTIVE.txt",
+        "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/refs/heads/master/phishing-links-INACTIVE.txt",
+        "https://raw.githubusercontent.com/Phishing-Database/Phishing.Database/refs/heads/master/phishing-links-NEW-today.txt"
+    ]
+    
+    try:
+        for db_url in phishing_db_urls:
+            response = requests.get(db_url, timeout=10)
+            response.raise_for_status()
+            lines = response.text.splitlines()
+            for line in lines:
+                line = line.strip()
+                if line and not line.startswith('#') and is_valid_url(line):
+                    cache['phishing_db_urls'].add(line)
+                    if line == url:
+                        save_cache(cache)
+                        return True
+        save_cache(cache)
+        return False
+    except requests.RequestException as e:
+        logging.error(f"Phishing Database error: {e}")
+        return f"Error accessing Phishing Database: {e}"
 
 # Check VirusTotal for URL
 def query_virustotal_url(url, config, cache):
@@ -330,7 +404,7 @@ def query_safe_browsing_url(url, config, cache):
     
     return "Error: All Google Safe Browsing API keys have reached their rate limit."
 
-# Check DNSBL for IP
+# Check DNSBL and WHOIS for IP
 def check_ip_dnsbl(ip_address):
     dnsbls = [
         "zen.spamhaus.org", "bl.spamcop.net", "dnsbl.sorbs.net", "xbl.spamhaus.org",
@@ -361,9 +435,30 @@ def check_ip_dnsbl(ip_address):
                 listed_dnsbls.append(dnsbl)
             except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.DNSException):
                 pass
-        return f"Listed in: {', '.join(listed_dnsbls)}" if listed_dnsbls else "Not listed in any DNSBLs"
+        dnsbl_result = f"Listed in: {', '.join(listed_dnsbls)}" if listed_dnsbls else "Not listed in any DNSBLs"
+        
+        # Fetch WHOIS data
+        whois_data = {}
+        try:
+            ip = IPWhois(ip_address)
+            result = ip.lookup_rdap()
+            whois_data = {
+                'organization': result.get('network', {}).get('name', 'Not found'),
+                'country': result.get('network', {}).get('country', 'Not found'),
+                'asn': result.get('asn_description', 'Not found'),
+                'registrar': result.get('network', {}).get('parent_handle', 'Not found')
+            }
+        except Exception as e:
+            whois_data = {
+                'organization': f"Error: {e}",
+                'country': 'Not found',
+                'asn': 'Not found',
+                'registrar': 'Not found'
+            }
+        
+        return {'dnsbl': dnsbl_result, 'whois': whois_data}
     except ValueError:
-        return "Invalid IP address"
+        return {'dnsbl': "Invalid IP address", 'whois': {}}
 
 # Check organization
 def check_organization(sender_ip, sender_domain):
@@ -510,7 +605,7 @@ def log_result(url, service, result):
 def index():
     cache = load_cache()
     online = is_online()
-    cached = bool(cache['urls'])
+    cached = bool(cache['urls'] or cache['phishing_db_urls'])
     config = load_config()
     has_vt_keys = bool(config.get('virustotal_api_keys'))
     has_gsb_keys = bool(config.get('google_safe_browsing_api_keys'))
@@ -524,7 +619,7 @@ def analyze():
     input_type = request.form.get('input_type')
     
     if not online and input_type != 'url':
-        return render_template('error.html', message="No internet connection. Only URLhaus checks are available offline.")
+        return render_template('error.html', message="No internet connection. Only URLhaus and Phishing-DB checks are available offline.")
     
     results = {}
     verdict = "Clean"
@@ -562,19 +657,26 @@ def analyze():
             
             results.update(email_data)
             results['organization'] = check_organization(results['sender_ip'], results['sender_domain']) if results['sender_ip'] else "No sender IP"
-            results['dnsbl'] = check_ip_dnsbl(results['sender_ip']) if results['sender_ip'] and is_valid_ip(results['sender_ip']) else "Invalid or no IP"
+            results['dnsbl'] = check_ip_dnsbl(results['sender_ip']) if results['sender_ip'] and is_valid_ip(results['sender_ip']) else {'dnsbl': "Invalid or no IP", 'whois': {}}
             
             if results['urls'] != ["No URLs found"]:
                 url_results = []
                 for url in results['urls']:
                     vt_result = query_virustotal_url(url, config, cache)
                     gsb_result = query_safe_browsing_url(url, config, cache)
+                    uh_text = check_urlhaus_text(url, cache)
+                    uh_result = uh_text
+                    if uh_text is False:
+                        uh_result = check_urlhaus_ndb(url, cache)
+                    ph_result = check_phishing_db(url, cache)
                     url_results.append({
                         'url': url,
                         'virustotal': vt_result,
-                        'safebrowsing': gsb_result
+                        'safebrowsing': gsb_result,
+                        'urlhaus': {"verdict": "Suspicious" if uh_result is True else "Clean" if uh_result is False else f"Error: {uh_result}"},
+                        'phishing_db': {"verdict": "Suspicious" if ph_result is True else "Clean" if ph_result is False else f"Error: {ph_result}"}
                     })
-                    if vt_result['verdict'] == "Suspicious" or gsb_result == "Suspicious":
+                    if vt_result['verdict'] == "Suspicious" or gsb_result == "Suspicious" or uh_result is True or ph_result is True:
                         verdict = "Suspicious"
                 results['urls'] = url_results
             else:
@@ -589,7 +691,7 @@ def analyze():
                 verdict = "Suspicious"
         
         # Verdict for email files
-        if is_email and (results['dnsbl'].startswith("Listed in:") or
+        if is_email and (results['dnsbl']['dnsbl'].startswith("Listed in:") or
                          results['organization'] == "Sender IP and Domain do not belong to the same Organization"):
             verdict = "Suspicious"
         
@@ -602,28 +704,31 @@ def analyze():
     elif input_type == 'url':
         url = request.form.get('url', '').strip()
         service = request.form.get('service', 'URLhaus')
-        if not is_valid_url(url):
-            return render_template('error.html', message="Invalid URL format.")
+        if not url or not is_valid_url(url):
+            return render_template('error.html', message="Invalid URL format. Must be a valid http:// or https:// URL.")
         
         results['url'] = url
-        if service == 'All 3' and online:
+        if service == 'All' and online:
             if not config.get('virustotal_api_keys') or not config.get('google_safe_browsing_api_keys'):
-                return render_template('error.html', message="VirusTotal and Google Safe Browsing API keys required for All 3 services.")
+                return render_template('error.html', message="VirusTotal and Google Safe Browsing API keys required for All services.")
             results['virustotal'] = query_virustotal_url(url, config, cache)
             results['safebrowsing'] = query_safe_browsing_url(url, config, cache)
             uh_text = check_urlhaus_text(url, cache)
             uh_result = uh_text
             if uh_text is False:
                 uh_result = check_urlhaus_ndb(url, cache)
+            ph_result = check_phishing_db(url, cache)
             results['urlhaus'] = {"verdict": "Suspicious" if uh_result is True else "Clean" if uh_result is False else f"Error: {uh_result}"}
-            verdict = "Suspicious" if results['virustotal']['verdict'] == "Suspicious" or results['safebrowsing'] == "Suspicious" or results['urlhaus']['verdict'] == "Suspicious" else "Clean"
-            log_result(url, "All 3", f"VirusTotal: {results['virustotal']['verdict']}, Safe Browsing: {results['safebrowsing']}, URLhaus: {results['urlhaus']['verdict']}")
+            results['phishing_db'] = {"verdict": "Suspicious" if ph_result is True else "Clean" if ph_result is False else f"Error: {ph_result}"}
+            verdict = "Suspicious" if results['virustotal']['verdict'] == "Suspicious" or results['safebrowsing'] == "Suspicious" or uh_result is True or ph_result is True else "Clean"
+            log_result(url, "All Services", f"VirusTotal: {results['virustotal']['verdict']}, Safe Browsing: {results['safebrowsing']}, URLhaus: {results['urlhaus']['verdict']}, Phishing-DB: {results['phishing_db']['verdict']}")
         elif service == 'VirusTotal' and online:
             if not config.get('virustotal_api_keys'):
                 return render_template('error.html', message="VirusTotal API key required.")
             results['virustotal'] = query_virustotal_url(url, config, cache)
             results['safebrowsing'] = "Not checked"
             results['urlhaus'] = {"verdict": "Not checked"}
+            results['phishing_db'] = {"verdict": "Not checked"}
             verdict = results['virustotal']['verdict']
             log_result(url, "VirusTotal", f"VirusTotal: {verdict}")
         elif service == 'Google Safe Browsing' and online:
@@ -632,6 +737,7 @@ def analyze():
             results['virustotal'] = {"verdict": "Not checked", "engines": []}
             results['safebrowsing'] = query_safe_browsing_url(url, config, cache)
             results['urlhaus'] = {"verdict": "Not checked"}
+            results['phishing_db'] = {"verdict": "Not checked"}
             verdict = results['safebrowsing']
             log_result(url, "Google Safe Browsing", f"Safe Browsing: {verdict}")
         elif service == 'URLhaus':
@@ -648,19 +754,28 @@ def analyze():
                 uh_ndb = check_urlhaus_ndb(url, cache)
                 results['urlhaus'] = {"verdict": "Suspicious" if uh_ndb is True else "Clean" if uh_ndb is False else f"Error: {uh_ndb}"}
                 verdict = "Suspicious" if uh_ndb is True else "Clean"
+            results['phishing_db'] = {"verdict": "Not checked"}
             log_result(url, "URLhaus", f"URLhaus: {results['urlhaus']['verdict']}")
+        elif service == 'Phishing-DB':
+            results['virustotal'] = {"verdict": "Not checked", "engines": []}
+            results['safebrowsing'] = "Not checked"
+            results['urlhaus'] = {"verdict": "Not checked"}
+            ph_result = check_phishing_db(url, cache)
+            results['phishing_db'] = {"verdict": "Suspicious" if ph_result is True else "Clean" if ph_result is False else f"Error: {ph_result}"}
+            verdict = "Suspicious" if ph_result is True else "Clean"
+            log_result(url, "Phishing-DB", f"Phishing-DB: {results['phishing_db']['verdict']}")
         else:
             return render_template('error.html', message="Service unavailable offline.")
         results['verdict'] = verdict
     
     elif input_type == 'ip':
         ip = request.form.get('ip', '').strip()
-        if not is_valid_ip(ip):
-            return render_template('error.html', message="Invalid IP format.")
+        if not ip or not is_valid_ip(ip):
+            return render_template('error.html', message="Invalid IP format. Must be a valid IPv4 or IPv6 address.")
         
         results['ip'] = ip
         results['dnsbl'] = check_ip_dnsbl(ip)
-        results['verdict'] = "Suspicious" if results['dnsbl'].startswith("Listed in:") else "Clean"
+        results['verdict'] = "Suspicious" if results['dnsbl']['dnsbl'].startswith("Listed in:") else "Clean"
         
         log_result(ip, "IP Analysis", f"Verdict: {results['verdict']}")
     
@@ -709,6 +824,59 @@ def history():
     except sqlite3.Error as e:
         logging.error(f"Database error fetching history: {e}")
         return render_template('error.html', message="Error fetching history. Please try again later.")
+
+# Save config to file
+def save_config(config):
+    try:
+        with open('config.json', 'w') as f:
+            json.dump(config, f, indent=4)
+    except Exception as e:
+        logging.error(f"Failed to save config: {e}")
+        return False
+    return True
+
+@app.route('/config', methods=['GET', 'POST'])
+def config():
+    config = load_config()
+    virustotal_api_keys = config.get('virustotal_api_keys', [])
+    google_safe_browsing_api_keys = config.get('google_safe_browsing_api_keys', [])
+
+    if request.method == 'POST':
+        if 'api_key' in request.form and 'key_type' in request.form:
+            key_type = request.form['key_type']
+            api_key = request.form['api_key'].strip()
+            if api_key:
+                if key_type == 'virustotal' and api_key not in virustotal_api_keys:
+                    virustotal_api_keys.append(api_key)
+                    config['virustotal_api_keys'] = virustotal_api_keys
+                elif key_type == 'google_safe_browsing' and api_key not in google_safe_browsing_api_keys:
+                    google_safe_browsing_api_keys.append(api_key)
+                    config['google_safe_browsing_api_keys'] = google_safe_browsing_api_keys
+                if save_config(config):
+                    return redirect(url_for('config'))
+                else:
+                    return render_template('error.html', message="Failed to save API key.")
+        elif 'remove_key' in request.form and 'key_type' in request.form:
+            key_type = request.form['key_type']
+            remove_key = request.form['remove_key']
+            if key_type == 'virustotal' and remove_key in virustotal_api_keys:
+                virustotal_api_keys.remove(remove_key)
+                config['virustotal_api_keys'] = virustotal_api_keys
+            elif key_type == 'google_safe_browsing' and remove_key in google_safe_browsing_api_keys:
+                google_safe_browsing_api_keys.remove(remove_key)
+                config['google_safe_browsing_api_keys'] = google_safe_browsing_api_keys
+            if save_config(config):
+                return redirect(url_for('config'))
+            else:
+                return render_template('error.html', message="Failed to remove API key.")
+
+    return render_template('config.html', 
+                         virustotal_api_keys=virustotal_api_keys,
+                         google_safe_browsing_api_keys=google_safe_browsing_api_keys)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
 
 if __name__ == '__main__':
     init_db()

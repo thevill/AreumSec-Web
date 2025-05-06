@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AreumSec</title>
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.png') }}" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='images/ico_areumsec.png') }}" type="image/x-icon">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Google Fonts for Cyberpunk Aesthetic -->
@@ -51,14 +51,16 @@
             background: rgba(10, 14, 23, 0.85);
             backdrop-filter: blur(10px);
             border-bottom: 1px solid var(--border-glow);
-            padding: 1rem 0;
+            /*padding: 0.25rem 0;  Further reduced padding for standard height */
+            padding: 0.05rem 1rem; /* Standard Bootstrap navbar padding */
             box-shadow: 0 4px 10px rgba(0, 255, 234, 0.2);
         }
 
         .navbar-brand {
             color: var(--primary-neon) !important;
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.8rem;
+            /*font-size: 1.2rem;  Further reduced font size */
+            font-size: 1rem; /* Bootstrap default font size */
             text-transform: uppercase;
             letter-spacing: 2px;
             text-shadow: 0 0 10px var(--primary-neon);
@@ -72,8 +74,9 @@
 
         .nav-link {
             color: var(--text-light);
-            font-size: 1rem;
-            margin: 0 1rem;
+            /*font-size: 0.85rem;  Further reduced font size */
+            font-size: 0.9rem; /* Bootstrap default size */
+            margin: 0 0.4rem; /* Tighter margin for compact layout */
             position: relative;
             transition: color 0.3s ease;
         }
@@ -95,6 +98,17 @@
 
         .nav-link:hover::after {
             width: 100%;
+        }
+
+        /* Navbar Toggler Styling */
+        .navbar-toggler {
+            padding: 0.25rem 0.5rem; /* Reduced padding for smaller toggler */
+            border: 1px solid var(--primary-neon);
+        }
+
+        .navbar-toggler-icon {
+            width: 1.2em; /* Slightly smaller icon */
+            height: 1.2em;
         }
 
         /* Center Navbar Content */
@@ -202,7 +216,7 @@
         /* Footer */
         footer {
             margin-top: 4rem;
-            padding: 2rem 0;
+            padding: 1.0rem 0;
             color: var(--text-muted);
             border-top: 1px solid var(--border-glow);
             text-shadow: 0 0 5px var(--text-muted);
@@ -211,7 +225,7 @@
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .navbar-brand {
-                font-size: 1.5rem;
+                font-size: 1rem; /* Further reduced for mobile */
                 margin: 0; /* Reset margin for mobile */
             }
             .container {
@@ -228,9 +242,9 @@
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
-                <img src="{{ url_for('static', filename='images/ico_areumsec.png') }}" alt="AreumSec Logo" width="100" height="100" class="d-inline-block me-2">
-                <span class="fs-2 fw-bold">AreumSec</span>
-              </a>
+                <img src="{{ url_for('static', filename='images/ico_areumsec.png') }}" alt="AreumSec Logo" width="32" height="32" class="d-inline-block me-2"> <!-- Further reduced logo size -->
+                <span class="fs-5 fw-bold">AreumSec</span> <!-- Adjusted font size -->
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -240,9 +254,41 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('history') }}">History</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('config') }}">Config</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('about') }}">About</a>
+                        </li>
                     {% elif request.path == '/history' %}
                         <li class="nav-item">
                             <a class="nav-link" href="{{ url_for('index') }}">Analyze</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('config') }}">Config</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('about') }}">About</a>
+                        </li>
+                    {% elif request.path == '/config' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Analyze</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('history') }}">History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('about') }}">About</a>
+                        </li>
+                    {% elif request.path == '/about' %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('index') }}">Analyze</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('history') }}">History</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('config') }}">Config</a>
                         </li>
                     {% endif %}
                 </ul>

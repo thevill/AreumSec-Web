@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-body">
+        <h2 class="text-uppercase mb-4" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 10px var(--primary-neon);">Manage API Keys</h2>
+        
+        <!-- Form to add API keys -->
+        <form method="POST" action="{{ url_for('config') }}" class="mb-5">
+            <div class="mb-3">
+                <label class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Select API Key Type:</label>
+                <select name="key_type" class="form-select analyze-input">
+                    <option value="virustotal">VirusTotal</option>
+                    <option value="google_safe_browsing">Google Safe Browsing</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="api_key" class="form-label" style="text-shadow: 0 0 5px var(--primary-neon);">Enter API Key:</label>
+                <input type="text" name="api_key" class="form-control analyze-input" placeholder="Enter your API key" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Add Key</button>
+        </form>
+
+        <!-- Table to display and remove API keys -->
+        <h3 class="text-uppercase mb-3" style="font-family: 'Orbitron', sans-serif; text-shadow: 0 0 5px var(--primary-neon);">Current API Keys</h3>
+        {% if virustotal_api_keys or google_safe_browsing_api_keys %}
+            <table class="table table-dark table-bordered" style="border-color: var(--border-glow);">
+                <thead>
+                    <tr>
+                        <th scope="col" style="color: var(--primary-neon);">Type</th>
+                        <th scope="col" style="color: var(--primary-neon);">API Key</th>
+                        <th scope="col" style="color: var(--primary-neon);">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key in virustotal_api_keys %}
+                        <tr>
+                            <td>VirusTotal</td>
+                            <td>{{ key[:4] }}...{{ key[-4:] }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('config') }}" onsubmit="return confirm('Are you sure you want to remove this API key?');">
+                                    <input type="hidden" name="remove_key" value="{{ key }}">
+                                    <input type="hidden" name="key_type" value="virustotal">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% for key in google_safe_browsing_api_keys %}
+                        <tr>
+                            <td>Google Safe Browsing</td>
+                            <td>{{ key[:4] }}...{{ key[-4:] }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('config') }}" onsubmit="return confirm('Are you sure you want to remove this API key?');">
+                                    <input type="hidden" name="remove_key" value="{{ key }}">
+                                    <input type="hidden" name="key_type" value="google_safe_browsing">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: var(--text-muted); text-shadow: 0 0 5px var(--text-muted);">No API keys configured.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
