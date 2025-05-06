@@ -36,7 +36,7 @@ python app.py
 1) Python 3
 2) Flask (Backend)
 3) Bootstrap 5 (Frontend)
-4) SQLite (Separate DB for DNSBL results)
+4) SQLite
 5) VirusTotal & Google SafeBrowsing APIs
 
 
