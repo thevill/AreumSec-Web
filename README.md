@@ -27,7 +27,7 @@ python app.py
 3) VirusTotal + Google SafeBrowsing Integration<br>
    API keys are securely managed in a separate config file.
 5) DNSBL Check & Logging<br>
-   All DNS Blacklist results are stored in a separate SQLite database.
+   A separate list of DNS Blacklist.
 6) Offline First<br>
    Lightweight and self-hosted — ideal for closed environments or air-gapped labs.
 
