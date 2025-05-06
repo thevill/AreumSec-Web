@@ -41,7 +41,7 @@ python app.py
 
 
 ### **API Keys:**<br>
-Add your api_keys in config.py:<br>
+Add your API keys in config<br>
 
 <br>
 <a href="https://www.buymeacoffee.com/pranaywajjala" target="_blank" rel="noopener noreferrer">
