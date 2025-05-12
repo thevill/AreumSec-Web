@@ -44,6 +44,10 @@ python app.py
 Add your API keys in config<br>
 
 <br>
-<a href="https://www.buymeacoffee.com/pranaywajjala" target="_blank" rel="noopener noreferrer">
-      <img src="https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-1.svg" 
-           alt="Buy Me a Coffee" style="height: 40px;">
+<a href="https://razorpay.me/@areumsec" target="_blank" style="text-decoration: none;">
+  <button style="display: flex; align-items: center; gap: 10px; background:#0f9d58; color:white; padding:10px 20px; border:none; border-radius:5px; cursor: pointer;">
+    <img src="https://cdn.razorpay.com/logo.svg" alt="Razorpay" style="height: 20px;">
+    Donate via UPI (Razorpay)
+  </button>
+</a>
+
